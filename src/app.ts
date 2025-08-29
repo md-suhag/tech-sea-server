@@ -23,7 +23,7 @@ app.use(
 
 app.get("/", (req, res) => {
   res.status(200).json({
-    message: "Welcome .Tech sea server is running...",
+    message: "Welcome. Tech sea server is running...",
   });
 });
 

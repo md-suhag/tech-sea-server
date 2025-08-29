@@ -28,7 +28,7 @@ passport.use(
           return done("User is not verified");
         }
 
-        if (isUserExist.isBlocked === true) {
+        if (isUserExist.isBlocked) {
           return done(`User is blocked`);
         }
 
@@ -83,7 +83,7 @@ passport.use(
           return done(null, false, { message: "User is not verified" });
         }
 
-        if (isUserExist && isUserExist.isBlocked === true) {
+        if (isUserExist && isUserExist.isBlocked) {
           return done(null, false, {
             message: `User is blocked`,
           });

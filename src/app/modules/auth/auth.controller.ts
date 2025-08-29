@@ -9,10 +9,10 @@ import { sendResponse } from "../../utils/sendResponse";
 import httpStatus from "http-status-codes";
 import { setAuthCookie } from "../../utils/setCookie";
 import { envVars } from "../../config/env";
+import { AuthServices } from "./auth.service";
 
 const login = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    console.log(req.body);
     passport.authenticate("local", async (err: any, user: any, info: any) => {
       if (err) {
         return next(new AppError(401, err));
@@ -55,6 +55,23 @@ const logout = catchAsync(async (req: Request, res: Response) => {
     data: null,
   });
 });
+const getNewAccessToken = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const refreshToken = req.cookies.refreshToken;
+    const tokenInfo = await AuthServices.getNewAccessToken(
+      refreshToken as string
+    );
+
+    setAuthCookie(res, tokenInfo);
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "New Access token created successfully",
+      data: tokenInfo,
+    });
+  }
+);
+
 const googleCallbackController = catchAsync(
   async (req: Request, res: Response, nex: NextFunction) => {
     let redirectTo = req.query.state ? (req.query.state as string) : "";
@@ -77,4 +94,5 @@ export const AuthControllers = {
   login,
   logout,
   googleCallbackController,
+  getNewAccessToken,
 };

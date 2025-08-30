@@ -10,6 +10,7 @@ const router = express.Router();
 router.post("/login", validateRequest(loginSchma), AuthControllers.login);
 router.post("/logout", AuthControllers.logout);
 router.post("/refresh-token", AuthControllers.getNewAccessToken);
+router.post("/verify", AuthControllers.verifyAccount);
 router.get(
   "/google",
   async (req: Request, res: Response, next: NextFunction) => {

@@ -90,9 +90,23 @@ const googleCallbackController = catchAsync(
     res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`);
   }
 );
+
+const verifyAccount = catchAsync(async (req: Request, res: Response) => {
+  const { activationToken } = req.body;
+
+  await AuthServices.verifyAccount(activationToken);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "User verified  successfully",
+    data: null,
+  });
+});
 export const AuthControllers = {
   login,
   logout,
   googleCallbackController,
   getNewAccessToken,
+  verifyAccount,
 };

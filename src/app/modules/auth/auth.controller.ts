@@ -10,6 +10,7 @@ import httpStatus from "http-status-codes";
 import { setAuthCookie } from "../../utils/setCookie";
 import { envVars } from "../../config/env";
 import { AuthServices } from "./auth.service";
+import { JwtPayload } from "jsonwebtoken";
 
 const login = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -92,7 +93,10 @@ const googleCallbackController = catchAsync(
 );
 
 const verifyAccount = catchAsync(async (req: Request, res: Response) => {
-  const { activationToken } = req.body;
+  const activationToken = req.headers.authorization;
+  if (!activationToken) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Activation token missing");
+  }
 
   await AuthServices.verifyAccount(activationToken);
 
@@ -103,10 +107,39 @@ const verifyAccount = catchAsync(async (req: Request, res: Response) => {
     data: null,
   });
 });
+
+const forgotPassword = catchAsync(async (req: Request, res: Response) => {
+  const { email } = req.body;
+  await AuthServices.fogotPassword(email);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Email sent Successfully for reset",
+    data: null,
+  });
+});
+
+const resetPassword = catchAsync(async (req: Request, res: Response) => {
+  const decodedToken = req.user;
+  const user = await AuthServices.resetPassword(
+    req.body,
+    decodedToken as JwtPayload
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Password Changed Successfully",
+    data: user,
+  });
+});
+
 export const AuthControllers = {
   login,
   logout,
   googleCallbackController,
   getNewAccessToken,
   verifyAccount,
+  forgotPassword,
+  resetPassword,
 };

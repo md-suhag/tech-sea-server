@@ -1,9 +1,15 @@
 import express, { NextFunction, Request, Response } from "express";
 import { AuthControllers } from "./auth.controller";
 import { validateRequest } from "./../../middlewares/validateRequest";
-import { loginSchma } from "./auth.validation";
+import {
+  forgotPasswordSchema,
+  loginSchma,
+  resetPasswordSchema,
+} from "./auth.validation";
 import passport from "passport";
 import { envVars } from "../../config/env";
+import { checkAuth } from "../../middlewares/checkAuth";
+import { Role } from "../user/user.interface";
 
 const router = express.Router();
 
@@ -11,6 +17,18 @@ router.post("/login", validateRequest(loginSchma), AuthControllers.login);
 router.post("/logout", AuthControllers.logout);
 router.post("/refresh-token", AuthControllers.getNewAccessToken);
 router.post("/verify", AuthControllers.verifyAccount);
+
+router.post(
+  "/forgot-password",
+  validateRequest(forgotPasswordSchema),
+  AuthControllers.forgotPassword
+);
+router.post(
+  "/reset-password",
+  checkAuth(...Object.values(Role)),
+  validateRequest(resetPasswordSchema),
+  AuthControllers.resetPassword
+);
 router.get(
   "/google",
   async (req: Request, res: Response, next: NextFunction) => {

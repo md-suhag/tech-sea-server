@@ -8,6 +8,35 @@ import AppError from "../../errorHelpers/AppError";
 import httpStatus from "http-status-codes";
 import { sendEmail } from "../../utils/sendEmail";
 import bcrypt from "bcryptjs";
+import { IAuthProvider, IUser } from "../user/user.interface";
+
+const createUserIntoDB = async (payload: Partial<IUser>) => {
+  const { name, email, password } = payload;
+
+  const isUserExist = await User.findOne({ email });
+
+  if (isUserExist) {
+    throw new AppError(httpStatus.BAD_REQUEST, "User Already Exist");
+  }
+  const hashedPassword = await bcrypt.hash(
+    password as string,
+    Number(envVars.BCRYPT_SALT_ROUND)
+  );
+
+  const authProvider: IAuthProvider = {
+    provider: "credentials",
+    providerId: email as string,
+  };
+  const user = await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    auths: [authProvider],
+  });
+  user.password = undefined;
+
+  return user;
+};
 
 const getNewAccessToken = async (refreshToken: string) => {
   const newAccessToken = await createNewAcccessTokenWithRefreshToken(
@@ -102,6 +131,7 @@ const resetPassword = async (
   );
 };
 export const AuthServices = {
+  createUserIntoDB,
   getNewAccessToken,
   verifyAccount,
   fogotPassword,

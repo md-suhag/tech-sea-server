@@ -11,6 +11,29 @@ import { setAuthCookie } from "../../utils/setCookie";
 import { envVars } from "../../config/env";
 import { AuthServices } from "./auth.service";
 import { JwtPayload } from "jsonwebtoken";
+import { sendEmail } from "../../utils/sendEmail";
+import { createActivationUrl } from "../../utils/createActivationUrl";
+
+const createUser = catchAsync(async (req: Request, res: Response) => {
+  const userData = req.body;
+  const user = await AuthServices.createUserIntoDB(userData);
+
+  const activationUrl = createActivationUrl(user);
+
+  await sendEmail({
+    to: user.email,
+    subject: "Verification Link",
+    templateName: "verifyEmail",
+    templateData: { name: user.name, activationUrl },
+  });
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.CREATED,
+    message: `Please check your email : ${user.email} to verify your account.`,
+    data: null,
+  });
+});
 
 const login = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -135,6 +158,7 @@ const resetPassword = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const AuthControllers = {
+  createUser,
   login,
   logout,
   googleCallbackController,

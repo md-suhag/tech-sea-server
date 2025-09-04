@@ -4,6 +4,7 @@ import { validateRequest } from "./../../middlewares/validateRequest";
 import {
   forgotPasswordSchema,
   loginSchma,
+  registerSchema,
   resetPasswordSchema,
 } from "./auth.validation";
 import passport from "passport";
@@ -12,7 +13,11 @@ import { checkAuth } from "../../middlewares/checkAuth";
 import { Role } from "../user/user.interface";
 
 const router = express.Router();
-
+router.post(
+  "/register",
+  validateRequest(registerSchema),
+  AuthControllers.createUser
+);
 router.post("/login", validateRequest(loginSchma), AuthControllers.login);
 router.post("/logout", AuthControllers.logout);
 router.post("/refresh-token", AuthControllers.getNewAccessToken);

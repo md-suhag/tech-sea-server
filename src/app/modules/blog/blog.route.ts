@@ -1,7 +1,11 @@
 import express from "express";
 import { BlogControllers } from "./blog.controller";
 import { validateRequest } from "../../middlewares/validateRequest";
-import { createBlogSchema, updateBlogSchema } from "./blog.validation";
+import {
+  createBlogSchema,
+  reactToBlogSchema,
+  updateBlogSchema,
+} from "./blog.validation";
 import { checkAuth } from "../../middlewares/checkAuth";
 import { Role } from "../user/user.interface";
 import { singleImageUpload } from "../../config/multer";
@@ -31,4 +35,11 @@ router.delete(
   BlogControllers.deleteBlog
 );
 router.get("/:id/comments", BlogControllers.getCommentsOfBlog);
+
+router.post(
+  "/:id/react",
+  checkAuth(...Object.values(Role)),
+  validateRequest(reactToBlogSchema),
+  BlogControllers.reactToBlog
+);
 export const blogRoutes = router;

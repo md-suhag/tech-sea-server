@@ -7,6 +7,8 @@ import AppError from "../../errorHelpers/AppError";
 import httpStatus from "http-status-codes";
 import { Role } from "../user/user.interface";
 import { Comment } from "../comment/comment.model";
+import { BlogReaction } from "./blogReaction.model";
+import { ReactionType } from "./blogReaction.interface";
 
 const createBlog = async (payload: Partial<IBlog>) => {
   const blog = await Blog.create(payload);
@@ -106,6 +108,57 @@ const getCommentsOfBlog = async (id: string, query: Record<string, string>) => {
   };
 };
 
+const reactToBlog = async (
+  id: string,
+  decodedToken: JwtPayload,
+  type: ReactionType
+) => {
+  const session = await BlogReaction.startSession();
+  session.startTransaction();
+
+  try {
+    const blog = await Blog.findById(id).session(session);
+    if (!blog) {
+      throw new AppError(httpStatus.NOT_FOUND, "Blog not found");
+    }
+
+    const isReacted = await BlogReaction.findOne({
+      blog: id,
+      user: decodedToken.userId,
+    }).session(session);
+
+    if (isReacted) {
+      throw new AppError(httpStatus.BAD_REQUEST, "Already reacted");
+    }
+
+    await BlogReaction.create(
+      [
+        {
+          type,
+          user: decodedToken.userId,
+          blog: id,
+        },
+      ],
+      { session }
+    );
+
+    if (type === ReactionType.LIKE) {
+      blog.likes += 1;
+    } else if (type === ReactionType.DISLIKE) {
+      blog.dislikes += 1;
+    }
+
+    await blog.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    throw err;
+  }
+};
+
 export const BlogServices = {
   createBlog,
   getAllBlogs,
@@ -113,4 +166,5 @@ export const BlogServices = {
   updateBlog,
   deleteBlog,
   getCommentsOfBlog,
+  reactToBlog,
 };

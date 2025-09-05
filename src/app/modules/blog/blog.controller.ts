@@ -105,6 +105,18 @@ const getCommentsOfBlog = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const reactToBlog = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { type } = req.body;
+  const decodedToken = req.user as JwtPayload;
+  await BlogServices.reactToBlog(id, decodedToken, type);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Reacted  successfully",
+    data: null,
+  });
+});
 export const BlogControllers = {
   createBlog,
   getAllBlogs,
@@ -112,4 +124,5 @@ export const BlogControllers = {
   updateBlog,
   deleteBlog,
   getCommentsOfBlog,
+  reactToBlog,
 };

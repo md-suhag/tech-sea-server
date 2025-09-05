@@ -6,6 +6,7 @@ import { Blog } from "./blog.model";
 import AppError from "../../errorHelpers/AppError";
 import httpStatus from "http-status-codes";
 import { Role } from "../user/user.interface";
+import { Comment } from "../comment/comment.model";
 
 const createBlog = async (payload: Partial<IBlog>) => {
   const blog = await Blog.create(payload);
@@ -85,10 +86,31 @@ const deleteBlog = async (id: string, decodedToken: JwtPayload) => {
   }
   await Blog.findByIdAndUpdate(id, { isDeleted: true });
 };
+
+const getCommentsOfBlog = async (id: string, query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(
+    Comment.find({ blog: id }).populate("user", "name"),
+    query
+  );
+
+  const allComments = queryBuilder.filter().sort().fields().paginate();
+
+  const [data, meta] = await Promise.all([
+    allComments.build(),
+    queryBuilder.getMeta(),
+  ]);
+
+  return {
+    data,
+    meta,
+  };
+};
+
 export const BlogServices = {
   createBlog,
   getAllBlogs,
   getSingleBlog,
   updateBlog,
   deleteBlog,
+  getCommentsOfBlog,
 };

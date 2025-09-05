@@ -30,4 +30,5 @@ router.delete(
   checkAuth(...Object.values(Role)),
   BlogControllers.deleteBlog
 );
+router.get("/:id/comments", BlogControllers.getCommentsOfBlog);
 export const blogRoutes = router;

@@ -88,10 +88,28 @@ const deleteBlog = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getCommentsOfBlog = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const query = req.query;
+  const result = await BlogServices.getCommentsOfBlog(
+    id,
+    query as Record<string, string>
+  );
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Comments retrieved successfully",
+    data: result.data,
+    meta: result.meta,
+  });
+});
+
 export const BlogControllers = {
   createBlog,
   getAllBlogs,
   getSingleBlog,
   updateBlog,
   deleteBlog,
+  getCommentsOfBlog,
 };

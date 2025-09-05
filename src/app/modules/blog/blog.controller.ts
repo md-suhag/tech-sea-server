@@ -74,9 +74,24 @@ const updateBlog = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const deleteBlog = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const decodedToken = req.user as JwtPayload;
+
+  await BlogServices.deleteBlog(id, decodedToken);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Blog deleted Successfully",
+    data: null,
+  });
+});
+
 export const BlogControllers = {
   createBlog,
   getAllBlogs,
   getSingleBlog,
   updateBlog,
+  deleteBlog,
 };

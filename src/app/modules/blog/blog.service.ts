@@ -5,6 +5,7 @@ import { IBlog } from "./blog.interface";
 import { Blog } from "./blog.model";
 import AppError from "../../errorHelpers/AppError";
 import httpStatus from "http-status-codes";
+import { Role } from "../user/user.interface";
 
 const createBlog = async (payload: Partial<IBlog>) => {
   const blog = await Blog.create(payload);
@@ -66,10 +67,28 @@ const updateBlog = async (
 
   return updatedBlog;
 };
+const deleteBlog = async (id: string, decodedToken: JwtPayload) => {
+  const blog = await Blog.findById(id);
+  if (!blog) {
+    throw new Error("Blog not found");
+  }
 
+  if (
+    decodedToken.role !== Role.ADMIN &&
+    decodedToken.role !== Role.SUPER_ADMIN &&
+    blog.author.toString() !== decodedToken.userId
+  ) {
+    throw new AppError(
+      httpStatus.UNAUTHORIZED,
+      "You are not authorized to delete this blog"
+    );
+  }
+  await Blog.findByIdAndUpdate(id, { isDeleted: true });
+};
 export const BlogServices = {
   createBlog,
   getAllBlogs,
   getSingleBlog,
   updateBlog,
+  deleteBlog,
 };

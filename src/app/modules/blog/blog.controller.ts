@@ -55,8 +55,28 @@ const getSingleBlog = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateBlog = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const decodedToken = req.user as JwtPayload;
+
+  const imgUrl = req.file?.path;
+  if (imgUrl) {
+    req.body.imageUrl = imgUrl;
+  }
+
+  const updatedBlog = await BlogServices.updateBlog(id, req.body, decodedToken);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: "Blog updated Successfully",
+    data: updatedBlog,
+  });
+});
+
 export const BlogControllers = {
   createBlog,
   getAllBlogs,
   getSingleBlog,
+  updateBlog,
 };

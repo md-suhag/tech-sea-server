@@ -1,7 +1,10 @@
+import { JwtPayload } from "jsonwebtoken";
 import { QueryBuilder } from "../../utils/QueryBuilder";
 import { blogSearchableFields } from "./blog.constant";
 import { IBlog } from "./blog.interface";
 import { Blog } from "./blog.model";
+import AppError from "../../errorHelpers/AppError";
+import httpStatus from "http-status-codes";
 
 const createBlog = async (payload: Partial<IBlog>) => {
   const blog = await Blog.create(payload);
@@ -41,4 +44,32 @@ const getSingleBlog = async (slug: string) => {
   return blog;
 };
 
-export const BlogServices = { createBlog, getAllBlogs, getSingleBlog };
+const updateBlog = async (
+  id: string,
+  payload: Partial<IBlog>,
+  decodedToken: JwtPayload
+) => {
+  const blog = await Blog.findById(id);
+  if (!blog) {
+    throw new Error("Blog not found");
+  }
+  if (blog.author.toString() !== decodedToken.userId) {
+    throw new AppError(
+      httpStatus.UNAUTHORIZED,
+      "You are not authorized to update this blog"
+    );
+  }
+  const updatedBlog = await Blog.findByIdAndUpdate(id, payload, {
+    new: true,
+    runValidators: true,
+  });
+
+  return updatedBlog;
+};
+
+export const BlogServices = {
+  createBlog,
+  getAllBlogs,
+  getSingleBlog,
+  updateBlog,
+};

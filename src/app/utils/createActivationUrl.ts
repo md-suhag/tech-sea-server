@@ -7,5 +7,5 @@ export const createActivationUrl = (user: Partial<IUser>) => {
     envVars.ACTIVATION_SECRET,
     "5m"
   );
-  return `${process.env.FRONTEND_URL}/activate?id=${user._id}&token=${token}`;
+  return `${process.env.FRONTEND_URL}/verify-email?id=${user._id}&token=${token}`;
 };

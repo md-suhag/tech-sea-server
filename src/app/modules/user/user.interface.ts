@@ -18,6 +18,6 @@ export interface IUser {
   isBlocked?: boolean;
   isVerified?: boolean;
   auths: IAuthProvider[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

@@ -44,6 +44,9 @@ const getSingleBlog = async (slug: string) => {
     "author",
     "name"
   );
+  if (!blog) {
+    throw new AppError(httpStatus.NOT_FOUND, "Blog not found");
+  }
 
   return blog;
 };
